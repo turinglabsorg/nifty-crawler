@@ -1,0 +1,28 @@
+{
+  "name": "erc721-parser",
+  "version": "0.0.1",
+  "description": "Explore and parse any ERC-721 Smart Contract",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/turinglabsorg/erc721-parser.git"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "smart",
+    "contracts",
+    "etc721",
+    "nft",
+    "collectibles"
+  ],
+  "author": "turinglabsorg",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/turinglabsorg/erc721-parser/issues"
+  },
+  "homepage": "https://github.com/turinglabsorg/erc721-parser#readme"
+}
