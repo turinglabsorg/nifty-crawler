@@ -164,11 +164,10 @@ function analyze(from, to, nftContract, smartcontract_address) {
                   let ft = await FileType.fromBuffer(image.data)
                   console.log('File type is: ', ft)
                   // Check if exists image file
-                  if (ft === undefined) {
-                    ft = { ext: '.jpg' }
-                  }
-                  if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
-                    fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
+                  if (ft !== undefined) {
+                    if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
+                      fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
+                    }
                   }
 
                   // Saving in DB
