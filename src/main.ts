@@ -275,7 +275,7 @@ app.get('/contract/:smart_contract', async (req, res) => {
       contract = split[k]
     }
   }
-  const NFTs = await NFT.find({ smart_contract: { $regex:/^contract$/i } })
+  const NFTs = await NFT.find({ smart_contract: { '$regex': '^' + contract + '$', '$options': 'i' } })
   res.send(NFTs)
 })
 
