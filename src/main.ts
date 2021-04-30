@@ -104,11 +104,17 @@ function run(smartcontract_address) {
           }
           console.log(uri, 'OWNER IS', owner)
           console.log('Downloading metadata file...')
-          let metadata = await axios.get(uri, {
-            responseType: 'arraybuffer'
-          })
+
+          let metadata
+          try {
+            metadata = await axios.get(uri, {
+              responseType: 'arraybuffer'
+            })
+          } catch (e) {
+            console.log('Metadata not found at ' + uri + ', LOL')
+          }
           // console.log(metadata.data)
-          if (metadata.data !== undefined) {
+          if (metadata !== undefined && metadata.data !== undefined) {
             console.log('Metadata downloaded correctly!')
 
             // Check if exists metadata json
@@ -149,7 +155,11 @@ function run(smartcontract_address) {
         i++
       }
     } catch (e) {
-      console.log(e)
+      if (e.message.indexOf('nonexistent') === -1) {
+        console.log(e.message)
+      } else {
+        console.log('ENDED PARSING')
+      }
       isParsing = false
       ended = true
       response(true)
