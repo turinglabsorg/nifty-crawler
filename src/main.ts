@@ -77,8 +77,7 @@ function run(smartcontract_address) {
     if (contractURI !== "") {
       console.log('Contract URI is', contractURI)
     }
-    let ended = false
-    let i = 1;
+
     // Check if exists files folder
     if (!fs.existsSync('./files')) {
       fs.mkdirSync('./files');
@@ -89,81 +88,79 @@ function run(smartcontract_address) {
       fs.mkdirSync('./files/' + smartcontract_address);
     }
 
-    try {
-      while (!ended) {
-        const check = await NFT.findOne({ tokenID: i, smart_contract: smartcontract_address })
-        if (check === null) {
-          const owner = await nftContract.methods.ownerOf(i).call();
-          const uri = await nftContract.methods.tokenURI(i).call();
-          let exploded = uri.split('/')
-          let last = exploded.length - 1
-          let tokenFolder = exploded[last]
-          // Check if exists token folder
-          if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
-            fs.mkdirSync('./files/' + smartcontract_address + '/' + tokenFolder);
-          }
-          console.log(uri, 'OWNER IS', owner)
-          console.log('Downloading metadata file...')
-
-          let metadata
-          try {
-            metadata = await axios.get(uri, {
-              responseType: 'arraybuffer'
-            })
-          } catch (e) {
-            console.log('Metadata not found at ' + uri + ', LOL')
-          }
-          // console.log(metadata.data)
-          if (metadata !== undefined && metadata.data !== undefined) {
-            console.log('Metadata downloaded correctly!')
-
-            // Check if exists metadata json
-            if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
-              fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/nft.json', metadata.data)
+    nftContract.getPastEvents('Transfer', {
+      fromBlock: 0,
+      toBlock: 'latest'
+    }, async function (error, events) {
+      if (!error) {
+        for (var i = 0; i < events.length; i++) {
+          console.log('Parsing tokenId: ' + events[i].returnValues.tokenId)
+          const check = await NFT.findOne({ tokenID: events[i].returnValues.tokenId, smart_contract: smartcontract_address })
+          if (check === null) {
+            const owner = await nftContract.methods.ownerOf(events[i].returnValues.tokenId).call();
+            const uri = await nftContract.methods.tokenURI(events[i].returnValues.tokenId).call();
+            let exploded = uri.split('/')
+            let last = exploded.length - 1
+            let tokenFolder = exploded[last]
+            // Check if exists token folder
+            if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
+              fs.mkdirSync('./files/' + smartcontract_address + '/' + tokenFolder);
             }
-            let md = JSON.parse(Buffer.from(metadata.data).toString())
-            if (md.image !== undefined) {
-              console.log('Downloading media file...')
-              let image = await axios.get(md.image, {
+            console.log(uri, 'OWNER IS', owner)
+            console.log('Downloading metadata file...')
+
+            let metadata
+            try {
+              metadata = await axios.get(uri, {
                 responseType: 'arraybuffer'
               })
-              if (image.data !== undefined) {
-                console.log('Image downloaded correctly!')
-                let ft = await FileType.fromBuffer(image.data)
-                console.log('File type is: ', ft)
-                // Check if exists image file
-                if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
-                  fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
-                }
+            } catch (e) {
+              console.log('Metadata not found at ' + uri + ', LOL')
+            }
+            // console.log(metadata.data)
+            if (metadata !== undefined && metadata.data !== undefined) {
+              console.log('Metadata downloaded correctly!')
 
-                // Saving in DB
-                console.log('Saving in DB')
-                const nft = new NFT({
-                  smart_contract: smartcontract_address,
-                  tokenID: i,
-                  tokenURI: uri,
-                  metadata: md,
-                  filetype: ft
-                });
-                await nft.save()
+              // Check if exists metadata json
+              if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
+                fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/nft.json', metadata.data)
+              }
+              let md = JSON.parse(Buffer.from(metadata.data).toString())
+              if (md.image !== undefined) {
+                console.log('Downloading media file...')
+                let image = await axios.get(md.image, {
+                  responseType: 'arraybuffer'
+                })
+                if (image.data !== undefined) {
+                  console.log('Image downloaded correctly!')
+                  let ft = await FileType.fromBuffer(image.data)
+                  console.log('File type is: ', ft)
+                  // Check if exists image file
+                  if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
+                    fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
+                  }
+
+                  // Saving in DB
+                  console.log('Saving in DB')
+                  const nft = new NFT({
+                    smart_contract: smartcontract_address,
+                    tokenID: events[i].returnValues.tokenId,
+                    tokenURI: uri,
+                    metadata: md,
+                    filetype: ft
+                  });
+                  await nft.save()
+                }
               }
             }
+          } else {
+            console.log('Skipping ' + check.tokenURI)
           }
-        } else {
-          console.log('Skipping ' + check.tokenURI)
         }
-        i++
       }
-    } catch (e) {
-      if (e.message.indexOf('nonexistent') === -1) {
-        console.log(e.message)
-      } else {
-        console.log('ENDED PARSING')
-      }
-      isParsing = false
-      ended = true
-      response(true)
-    }
+    })
+    console.log('ENDED PARSING')
+    response(true)
   })
 }
 
