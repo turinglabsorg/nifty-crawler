@@ -9,7 +9,8 @@ new Vue({
         chunked: [],
         contract: "",
         contracts: {},
-        percentage: 0
+        percentage: 0,
+        onlyDecentralized: false
     },
     async mounted() {
         const app = this
@@ -21,27 +22,29 @@ new Vue({
     methods: {
         async getData() {
             const app = this
-            let nfts = await window.axios.get('/nfts')
-            app.counts = nfts.data.length
-            app.decentralized = 0
-            app.centralized = 0
-            app.nfts = nfts.data
-            for (let k in app.nfts) {
-                if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1 && app.nfts[k].metadata.image.indexOf('ipfs') !== -1) {
-                    app.decentralized++
-                } else {
-                    app.centralized++
+            if (app.contract === "") {
+                let nfts = await window.axios.get('/nfts')
+                app.counts = nfts.data.length
+                app.decentralized = 0
+                app.centralized = 0
+                app.nfts = nfts.data
+                for (let k in app.nfts) {
+                    if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1 && app.nfts[k].metadata.image.indexOf('ipfs') !== -1) {
+                        app.decentralized++
+                    } else {
+                        app.centralized++
+                    }
                 }
-            }
-            app.percentage = (app.decentralized / app.counts * 100).toFixed(2)
-            app.chunked = app.chunk(app.nfts, 10)
+                app.percentage = (app.decentralized / app.counts * 100).toFixed(2)
+                app.chunked = app.chunk(app.nfts, 10)
 
-            let contractsDB = await window.axios.get('/contracts')
-            let contracts = {}
-            for (let k in contractsDB.data) {
-                contracts[contractsDB.data[k].smart_contract] = contractsDB.data[k]
+                let contractsDB = await window.axios.get('/contracts')
+                let contracts = {}
+                for (let k in contractsDB.data) {
+                    contracts[contractsDB.data[k].smart_contract] = contractsDB.data[k]
+                }
+                app.contracts = contracts
             }
-            app.contracts = contracts
         },
         chunk(arr, size) {
             let chunked = []

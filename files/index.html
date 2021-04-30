@@ -60,10 +60,21 @@
             <div class="container mt-5">
                 <div class="row align-items-center">
                     <div class="col-lg-12 text-center">
-                        <h2 v-if="!contract">We've analyzed<br>{{ counts }} NFTs from {{ Object.keys(contracts).length }}
+                        <h2 v-if="!contract">We've analyzed<br>{{ counts }} NFTs from {{ Object.keys(contracts).length
+                            }}
                             contracts</h2>
                         <h2 v-if="contract">This collection contains {{ counts }} NFTs</h2>
-                        <h3 style="font-size:16px;">{{ decentralized }} out of {{ counts }} are decentralized ({{ percentage }}%)!</h3>
+                        <h3 style="font-size:16px;">{{ decentralized }} out of {{ counts }} are decentralized ({{
+                            percentage }}%)!</h3>
+                        <hr>
+                        <div class="form-group">
+                            <select class="form-control" v-on:change="checkContract()" v-model="contract">
+                                <option value="">Show all Smart Contracts</option>
+                                <option v-for="contract in contracts" :value="contract.smart_contract" v-bind:key="contract.smart_contract">{{
+                                    contract.name }} ({{ contract.symbol }}) {{ contract.smart_contract }}</option>
+                            </select>
+                        </div>
+                        <hr>
                         <div class="table-responsive">
                             <table class="table table-striped mt-5 text-left">
                                 <thead>
@@ -79,10 +90,12 @@
                                 <tbody>
                                     <tr v-for="nft in chunked[page]" v-bind:key="nft.tokenURI">
                                         <th scope="row">
-                                            <a v-if="contracts[nft.smart_contract]" :href="'https://etherscan.io/address/'+ nft.smart_contract"
+                                            <a v-if="contracts[nft.smart_contract]"
+                                                :href="'https://etherscan.io/address/'+ nft.smart_contract"
                                                 target="_blank">{{ contracts[nft.smart_contract].name }} ({{
                                                 contracts[nft.smart_contract].symbol }})</a>
-                                            <a v-if="!contracts[nft.smart_contract]" :href="'https://etherscan.io/address/'+ nft.smart_contract"
+                                            <a v-if="!contracts[nft.smart_contract]"
+                                                :href="'https://etherscan.io/address/'+ nft.smart_contract"
                                                 target="_blank">{{ nft.smart_contract }}
                                             </a>
                                         </th>
