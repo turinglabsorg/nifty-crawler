@@ -77,7 +77,7 @@
                                     <th scope="row"><a :href="'https://etherscan.io/address/'+ nft.smart_contract" target="_blank">{{ nft.smart_contract.substr(0,8) }}...{{ nft.smart_contract.substr(-8) }}</a></th>
                                     <td>{{ nft.tokenID }}</td>
                                     <td><a :href="nft.tokenURI" target="_blank">{{ nft.tokenURI.substr(0,12) }}...{{ nft.tokenURI.substr(-12) }}</a></td>
-                                    <td class="text-center"><a :href="nft.metadata.image" target="_blank"><img :src="nft.metadata.image" height="30"></a></td>
+                                    <td class="text-center"><a :href="nft.metadata.image" target="_blank">OPEN</td>
                                     <td class="text-center">
                                         <span v-if="nft.tokenURI.indexOf('ipfs') !== -1">YES</span>
                                         <span v-if="nft.tokenURI.indexOf('ipfs') === -1">NO</span>
