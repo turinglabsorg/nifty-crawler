@@ -23,6 +23,8 @@ new Vue({
             const app = this
             let nfts = await window.axios.get('/nfts')
             app.counts = nfts.data.length
+            app.decentralized = 0
+            app.centralized = 0
             app.nfts = nfts.data
             for (let k in app.nfts) {
                 if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1) {
