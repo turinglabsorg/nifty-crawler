@@ -256,8 +256,9 @@ app.get('/contracts', async (req, res) => {
   let response = []
   const contracts = await Track.find()
   for(let k in contracts){
-    if(unique.indexOf(contracts[k].smart_contract)){
-      unique.push(contracts[k].smart_contract)
+    let sc = contracts[k].smart_contract.trim()
+    if(unique.indexOf(sc)){
+      unique.push(sc)
       response.push(contracts[k])
     }
   }
