@@ -9,21 +9,11 @@ if [ $# -eq 0 ]
 
     #CREATE NEW CONFIGURATION
     touch "/etc/nginx/sites-enabled/default"
-    echo "server {
-            server_name p2p.$1;
-            location / {
-                proxy_pass http://127.0.0.1:42226;
-                client_max_body_size 20M;
-                proxy_http_version 1.1;
-                proxy_set_header Upgrade \$http_upgrade;
-                proxy_set_header Connection \"upgrade\";
-                proxy_set_header Host \$host;
-            }
-          }
+    echo "
           server {
             server_name $1;
             location / {
-                proxy_pass http://127.0.0.1:3001;
+                proxy_pass http://127.0.0.1:3000;
                 client_max_body_size 20M;
             }
             listen 80;
