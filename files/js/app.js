@@ -103,8 +103,6 @@ new Vue({
                 } else {
                     alert('We\'re not tracking this smart contract but we queued the download, please grab a coffee and came back later!')
                 }
-            } else {
-                alert('Insert a valid URL or Smart Contract address')
             }
         },
         async resetSearch() {
