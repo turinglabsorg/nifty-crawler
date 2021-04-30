@@ -164,6 +164,9 @@ function analyze(from, to, nftContract, smartcontract_address) {
                   let ft = await FileType.fromBuffer(image.data)
                   console.log('File type is: ', ft)
                   // Check if exists image file
+                  if (ft === undefined) {
+                    ft = { ext: '.jpg' }
+                  }
                   if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
                     fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
                   }
@@ -255,9 +258,9 @@ app.get('/contracts', async (req, res) => {
   let unique = []
   let response = []
   const contracts = await Track.find()
-  for(let k in contracts){
+  for (let k in contracts) {
     let sc = contracts[k].smart_contract.trim()
-    if(unique.indexOf(sc) === -1){
+    if (unique.indexOf(sc) === -1) {
       unique.push(sc)
       response.push(contracts[k])
     }
