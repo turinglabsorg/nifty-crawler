@@ -191,6 +191,11 @@ app.get('/track/:smart_contract', async (req, res) => {
   }
 })
 
+app.get('/contracts', async (req, res) => {
+  const contracts = await Track.find()
+  res.send(contracts)
+})
+
 app.get('/:smart_contract', async (req, res) => {
   const NFTs = await NFT.find({ smart_contract: req.params.smart_contract })
   res.send(NFTs)
