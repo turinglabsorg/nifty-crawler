@@ -10,17 +10,10 @@ const fs = require('fs')
 const FileType = require('file-type');
 const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGODB_CONNECTION, { useNewUrlParser: true, useUnifiedTopology: true });
-
-let smartcontract_address
-
-if (process.env.SMARTCONTRACT_ADDRESS !== undefined) {
-  smartcontract_address = process.env.SMARTCONTRACT_ADDRESS
-}
-
-if (argv.s !== undefined) {
-  smartcontract_address = argv.s
-}
-
+const express = require('express')
+const app = express()
+const port = 3000
+let isParsing = false
 const NFT = mongoose.model('NFT', {
   smart_contract: String,
   tokenID: String,
@@ -29,7 +22,8 @@ const NFT = mongoose.model('NFT', {
   filetype: Object
 });
 
-async function run() {
+async function run(smartcontract_address) {
+  isParsing = true
   if (smartcontract_address !== undefined) {
     console.log('Starting parse of ' + smartcontract_address)
   } else {
@@ -68,30 +62,29 @@ async function run() {
 
   try {
     while (!ended) {
-      const owner = await nftContract.methods.ownerOf(i).call();
-      const uri = await nftContract.methods.tokenURI(i).call();
+      const check = await NFT.findOne({ tokenID: i, smart_contract: smartcontract_address })
+      if (check === null) {
+        const owner = await nftContract.methods.ownerOf(i).call();
+        const uri = await nftContract.methods.tokenURI(i).call();
 
-      // Check if exists token folder
-      if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', ''))) {
-        fs.mkdirSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', ''));
-      }
-      console.log(uri, 'OWNER IS', owner)
-      console.log('Downloading metadata file...')
-      let metadata = await axios.get(uri, {
-        responseType: 'arraybuffer'
-      })
-      // console.log(metadata.data)
-      if (metadata.data !== undefined) {
-        console.log('Metadata downloaded correctly!')
-
-        // Check if exists metadata json
-        if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '')) + '/nft.json') {
-          fs.writeFileSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '') + '/nft.json', metadata.data)
+        // Check if exists token folder
+        if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', ''))) {
+          fs.mkdirSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', ''));
         }
-        let md = JSON.parse(Buffer.from(metadata.data).toString())
+        console.log(uri, 'OWNER IS', owner)
+        console.log('Downloading metadata file...')
+        let metadata = await axios.get(uri, {
+          responseType: 'arraybuffer'
+        })
+        // console.log(metadata.data)
+        if (metadata.data !== undefined) {
+          console.log('Metadata downloaded correctly!')
 
-        const check = await NFT.findOne({ tokenURI: uri, smart_contract: smartcontract_address })
-        if (check === null) {
+          // Check if exists metadata json
+          if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '')) + '/nft.json') {
+            fs.writeFileSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '') + '/nft.json', metadata.data)
+          }
+          let md = JSON.parse(Buffer.from(metadata.data).toString())
           if (md.image !== undefined) {
             console.log('Downloading media file...')
             let image = await axios.get(md.image, {
@@ -118,17 +111,39 @@ async function run() {
               await nft.save()
             }
           }
-        } else {
-          console.log('Skipping ' + uri)
         }
+      } else {
+        console.log('Skipping ' + check.tokenURI)
       }
       i++
     }
   } catch (e) {
-    console.log(e)
+    isParsing = false
     ended = true
   }
-  process.exit();
 }
 
-run()
+// Public API
+app.get('/', (req, res) => {
+  console.log(req.headers.host)
+  res.send('API is working!')
+})
+
+app.get('/run/:smart_contract', (req, res) => {
+  if (!isParsing) {
+    run(req.params.smart_contract)
+    console.log(req.headers.host)
+    res.send('Daemon started parsing')
+  } else {
+    res.send('Daemon is parsing yet')
+  }
+})
+
+app.get('/:smart_contract', async (req, res) => {
+  const NFTs = await NFT.find({ smart_contract: req.params.smart_contract })
+  res.send(NFTs)
+})
+
+app.listen(port, () => {
+  console.log(`Erc721 Parser listening at http://localhost:${port}`)
+})
