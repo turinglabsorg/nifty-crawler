@@ -7,23 +7,40 @@ new Vue({
         decentralized: 0,
         page: 0,
         chunked: [],
-        contract: ""
+        contract: "",
+        contracts: {},
+        percentage: 0
     },
     async mounted() {
         const app = this
-        let nfts = await window.axios.get('/nfts')
-        app.counts = nfts.data.length
-        app.nfts = nfts.data
-        for (let k in app.nfts) {
-            if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1) {
-                app.decentralized++
-            } else {
-                app.centralized++
-            }
-        }
-        app.chunked = app.chunk(app.nfts, 10)
+        app.getData()
+        setInterval(function () {
+            app.getData()
+        }, 30000)
     },
     methods: {
+        async getData() {
+            const app = this
+            let nfts = await window.axios.get('/nfts')
+            app.counts = nfts.data.length
+            app.nfts = nfts.data
+            for (let k in app.nfts) {
+                if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1) {
+                    app.decentralized++
+                } else {
+                    app.centralized++
+                }
+            }
+            app.percentage = (app.decentralized / app.counts * 100).toFixed(2)
+            app.chunked = app.chunk(app.nfts, 10)
+
+            let contractsDB = await window.axios.get('/contracts')
+            let contracts = {}
+            for (let k in contractsDB.data) {
+                contracts[contractsDB.data[k].smart_contract] = contractsDB.data[k]
+            }
+            app.contracts = contracts
+        },
         chunk(arr, size) {
             let chunked = []
             let i = 0

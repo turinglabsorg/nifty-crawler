@@ -26,6 +26,8 @@ const NFT = mongoose.model('NFT', {
 
 const Track = mongoose.model('track', {
   smart_contract: String,
+  name: String,
+  symbol: String,
   timestamp: Number
 });
 
@@ -34,86 +36,83 @@ function run(smartcontract_address) {
     isParsing = true
     if (smartcontract_address !== undefined) {
       console.log('Starting parse of ' + smartcontract_address)
+
+      const provider = new HDWalletProvider(
+        "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol",
+        "https://eth-mainnet.alchemyapi.io/v2/" + NODE_API_KEY
+      );
+      const web3Instance = new web3(provider);
+      const nftContract = new web3Instance.eth.Contract(
+        STANDARD_ABI,
+        smartcontract_address,
+        { gasLimit: "10000000" }
+      );
+
+      console.log('|* CONTRACT DETAILS *|')
+      let name = ""
+      let symbol = ""
+      let contractURI = ""
+      let contractDB = await Track.findOne({ smart_contract: smartcontract_address })
+      try {
+        name = await nftContract.methods.name().call();
+        contractDB.name = name
+      } catch (e) {
+        console.log('ERROR WHILE CATCHING NAME')
+      }
+      try {
+        symbol = await nftContract.methods.symbol().call();
+        contractDB.symbol = symbol
+      } catch (e) {
+        console.log('ERROR WHILE CATCHING SYMBOL')
+      }
+      try {
+        contractURI = await nftContract.methods.contractURI().call();
+      } catch (e) {
+        console.log('ERROR WHILE CATCHING CONTRACT URI')
+      }
+      console.log('>', name, symbol, '<')
+      contractDB.save()
+      if (contractURI !== "") {
+        console.log('Contract URI is', contractURI)
+      }
+
+      // Check if exists files folder
+      if (!fs.existsSync('./files')) {
+        fs.mkdirSync('./files');
+      }
+
+      // Check if exists contract folder
+      if (!fs.existsSync('./files/' + smartcontract_address)) {
+        fs.mkdirSync('./files/' + smartcontract_address);
+      }
+
+      const latest = await web3Instance.eth.getBlockNumber()
+
+      let fromBlock = latest
+      let toBlock = latest
+      let finished = false
+      let max = 999999
+
+      while (!finished) {
+        fromBlock = toBlock - max
+        if (fromBlock < 0) {
+          fromBlock = 0
+          finished = true
+        }
+        console.log('Analyzing from ' + fromBlock + ' / ' + toBlock)
+        let result = await analyze(fromBlock, toBlock, nftContract, smartcontract_address)
+        if (result === false) {
+          let loweringpercent = max / 100 * 30
+          max = parseInt((max - loweringpercent).toFixed(0))
+        } else {
+          max = 999999
+          toBlock = fromBlock
+        }
+      }
+      response(true)
     } else {
-      console.log('Must set a smart contract address first.')
+      response(false)
     }
-
-    const provider = new HDWalletProvider(
-      "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol",
-      "https://eth-mainnet.alchemyapi.io/v2/" + NODE_API_KEY
-    );
-    const web3Instance = new web3(provider);
-    const nftContract = new web3Instance.eth.Contract(
-      STANDARD_ABI,
-      smartcontract_address,
-      { gasLimit: "10000000" }
-    );
-
-    console.log('|* CONTRACT DETAILS *|')
-    let name = ""
-    let symbol = ""
-    let owner = ""
-    let contractURI = ""
-
-    try {
-      name = await nftContract.methods.name().call();
-    } catch (e) {
-      console.log('ERROR WHILE CATCHING NAME')
-    }
-    try {
-      symbol = await nftContract.methods.symbol().call();
-    } catch (e) {
-      console.log('ERROR WHILE CATCHING SYMBOL')
-    }
-    try {
-      owner = await nftContract.methods.owner().call();
-    } catch (e) {
-      console.log('ERROR WHILE CATCHING OWNER')
-    }
-    try {
-      contractURI = await nftContract.methods.contractURI().call();
-    } catch (e) {
-      console.log('ERROR WHILE CATCHING CONTRACT URI')
-    }
-    console.log('>', name, symbol, owner, '<')
-    if (contractURI !== "") {
-      console.log('Contract URI is', contractURI)
-    }
-
-    // Check if exists files folder
-    if (!fs.existsSync('./files')) {
-      fs.mkdirSync('./files');
-    }
-
-    // Check if exists contract folder
-    if (!fs.existsSync('./files/' + smartcontract_address)) {
-      fs.mkdirSync('./files/' + smartcontract_address);
-    }
-
-    const latest = await web3Instance.eth.getBlockNumber()
-
-    let fromBlock = latest
-    let toBlock = latest
-    let finished = false
-    let max = 999999
-
-    while (!finished) {
-      fromBlock = toBlock - max
-      if (fromBlock < 0) {
-        fromBlock = 0
-        finished = true
-      }
-      console.log('Analyzing from ' + fromBlock + ' / ' + toBlock)
-      let result = await analyze(fromBlock, toBlock, nftContract, smartcontract_address)
-      if (result === false) {
-        let loweringpercent = max / 100 * 30
-        max = parseInt((max - loweringpercent).toFixed(0))
-      } else {
-        max = 999999
-        toBlock = fromBlock
-      }
-    }
-    response(true)
   })
 }
 
@@ -128,7 +127,6 @@ function analyze(from, to, nftContract, smartcontract_address) {
           console.log('Parsing tokenId: ' + events[i].returnValues.tokenId)
           const check = await NFT.findOne({ tokenID: events[i].returnValues.tokenId, smart_contract: smartcontract_address })
           if (check === null) {
-            const owner = await nftContract.methods.ownerOf(events[i].returnValues.tokenId).call();
             const uri = await nftContract.methods.tokenURI(events[i].returnValues.tokenId).call();
             let exploded = uri.split('/')
             let last = exploded.length - 1
@@ -137,7 +135,6 @@ function analyze(from, to, nftContract, smartcontract_address) {
             if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
               fs.mkdirSync('./files/' + smartcontract_address + '/' + tokenFolder);
             }
-            console.log(uri, 'OWNER IS', owner)
             console.log('Downloading metadata file...')
 
             let metadata

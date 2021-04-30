@@ -29,7 +29,8 @@
                     class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link" href="https://discord.gg/Qy5Z5MTQ47" target="_blank">Help</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://discord.gg/Qy5Z5MTQ47"
+                            target="_blank">Help</a></li>
                 </ul>
             </div>
         </div>
@@ -45,7 +46,8 @@
                             style="border-radius:50px; line-height:30px; font-size:25px; padding:20px;"
                             placeholder="Insert contract address or OpenSea URL">
                     </div>
-                    <a class="btn btn-primary btn-xl rounded-pill mt-5" style="cursor:pointer" v-on:click="checkContract" href="#!">Check this contract</a><br>
+                    <a class="btn btn-primary btn-xl rounded-pill mt-5" style="cursor:pointer"
+                        v-on:click="checkContract" href="#!">Check this contract</a><br>
                     <div v-if="contract" style="cursor:pointer" v-on:click="resetSearch">Reset search</div>
                 </div>
             </div>
@@ -58,37 +60,49 @@
             <div class="container mt-5">
                 <div class="row align-items-center">
                     <div class="col-lg-12 text-center">
-                        <h2 v-if="!contract">We've analyzed {{ counts }} NFTs</h2>
+                        <h2 v-if="!contract">We've analyzed<br>{{ counts }} NFTs from {{ Object.keys(contracts).length }}
+                            contracts</h2>
                         <h2 v-if="contract">This collection contains {{ counts }} NFTs</h2>
-                        <h3 style="font-size:16px;">{{ decentralized }} out of {{ counts }} are decentralized!</h3>
-                        <table class="table table-striped mt-5 text-left">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Smart contract</th>
-                                    <th scope="col">Token Id</th>
-                                    <th scope="col">Token URI</th>
-                                    <th scope="col" class="text-center">Media type</th>
-                                    <th scope="col" class="text-center">NFT Decentralized</th>
-                                    <th scope="col" class="text-center">Image Decentralized</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="nft in chunked[page]" v-bind:key="nft.tokenURI">
-                                    <th scope="row"><a :href="'https://etherscan.io/address/'+ nft.smart_contract" target="_blank">{{ nft.smart_contract.substr(0,8) }}...{{ nft.smart_contract.substr(-8) }}</a></th>
-                                    <td>{{ nft.tokenID }}</td>
-                                    <td><a :href="nft.tokenURI" target="_blank">{{ nft.tokenURI.substr(0,12) }}...{{ nft.tokenURI.substr(-12) }}</a></td>
-                                    <td class="text-center"><a :href="nft.metadata.image" target="_blank">{{nft.filetype.mime}}</td>
-                                    <td class="text-center">
-                                        <span v-if="nft.tokenURI.indexOf('ipfs') !== -1">YES</span>
-                                        <span v-if="nft.tokenURI.indexOf('ipfs') === -1">NO</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span v-if="nft.metadata.image.indexOf('ipfs') !== -1">YES</span>
-                                        <span v-if="nft.metadata.image.indexOf('ipfs') === -1">NO</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <h3 style="font-size:16px;">{{ decentralized }} out of {{ counts }} are decentralized ({{ percentage }}%)!</h3>
+                        <div class="table-responsive">
+                            <table class="table table-striped mt-5 text-left">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Smart contract</th>
+                                        <th scope="col">Token Id</th>
+                                        <th scope="col">Token URI</th>
+                                        <th scope="col" class="text-center">Media type</th>
+                                        <th scope="col" class="text-center">Is NFT Decentralized?</th>
+                                        <th scope="col" class="text-center">Is Media Decentralized?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="nft in chunked[page]" v-bind:key="nft.tokenURI">
+                                        <th scope="row">
+                                            <a v-if="contracts[nft.smart_contract]" :href="'https://etherscan.io/address/'+ nft.smart_contract"
+                                                target="_blank">{{ contracts[nft.smart_contract].name }} ({{
+                                                contracts[nft.smart_contract].symbol }})</a>
+                                            <a v-if="!contracts[nft.smart_contract]" :href="'https://etherscan.io/address/'+ nft.smart_contract"
+                                                target="_blank">{{ nft.smart_contract }}
+                                            </a>
+                                        </th>
+                                        <td>{{ nft.tokenID }}</td>
+                                        <td><a :href="nft.tokenURI" target="_blank">{{ nft.tokenURI.substr(0,12) }}...{{
+                                                nft.tokenURI.substr(-12) }}</a></td>
+                                        <td class="text-center"><a :href="nft.metadata.image"
+                                                target="_blank">{{nft.filetype.mime}}</td>
+                                        <td class="text-center">
+                                            <span v-if="nft.tokenURI.indexOf('ipfs') !== -1">YES</span>
+                                            <span v-if="nft.tokenURI.indexOf('ipfs') === -1">NO</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span v-if="nft.metadata.image.indexOf('ipfs') !== -1">YES</span>
+                                            <span v-if="nft.metadata.image.indexOf('ipfs') === -1">NO</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <hr>
                         <button class="btn btn-primary" style="float:left" v-on:click="removePage()">Back</button>
                         <button class="btn btn-primary" style="float:right" v-on:click="addPage()">Next</button>
