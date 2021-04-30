@@ -157,10 +157,13 @@ function run(smartcontract_address) {
             console.log('Skipping ' + check.tokenURI)
           }
         }
+        response(true)
+        console.log('ENDED PARSING')
+      }else{
+        response(false)
+        console.log('ERROR PARSING')
       }
     })
-    console.log('ENDED PARSING')
-    response(true)
   })
 }
 
