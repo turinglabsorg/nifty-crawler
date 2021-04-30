@@ -191,6 +191,16 @@ app.get('/track/:smart_contract', async (req, res) => {
   }
 })
 
+app.get('/untrack/:smart_contract', async (req, res) => {
+  const check = await Track.findOne({ smart_contract: req.params.smart_contract })
+  if (check !== null) {
+    await Track.deleteOne({ smart_contract: req.params.smart_contract })
+    res.send('Smart contract deleted from tracker.')
+  } else {
+    res.send('Smart contract not tracked.')
+  }
+})
+
 app.get('/contracts', async (req, res) => {
   const contracts = await Track.find()
   res.send(contracts)
