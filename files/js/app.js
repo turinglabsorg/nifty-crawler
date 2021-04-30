@@ -27,7 +27,7 @@ new Vue({
             app.centralized = 0
             app.nfts = nfts.data
             for (let k in app.nfts) {
-                if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1) {
+                if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1 && app.nfts[k].metadata.image.indexOf('ipfs') !== -1) {
                     app.decentralized++
                 } else {
                     app.centralized++
@@ -88,7 +88,7 @@ new Vue({
                     app.centralized = 0
                     app.decentralized = 0
                     for (let k in app.nfts) {
-                        if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1) {
+                        if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1 && app.nfts[k].metadata.image.indexOf('ipfs') !== -1) {
                             app.decentralized++
                         } else {
                             app.centralized++
