@@ -1,2 +1,32 @@
-.env
+# Logs
+logs
+*.log
+npm-debug.log*
+files/*
+!files/.DOWNLOAD_FILES_WILL_APPEAR_HERE
+
+# Dependencies
 node_modules/
+
+# Coverage
+coverage
+
+# Transpiled files
+build/
+
+# VS Code
+.vscode
+!.vscode/tasks.js
+
+# JetBrains IDEs
+.idea/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Misc
+.DS_Store
+.env

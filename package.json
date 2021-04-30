@@ -1,28 +1,51 @@
 {
   "name": "erc721-parser",
-  "version": "0.0.1",
-  "description": "Explore and parse any ERC-721 Smart Contract",
-  "main": "index.js",
+  "version": "0.0.0",
+  "description": "Parse any Smart Contract and download all available details",
+  "devDependencies": {
+    "@types/jest": "~26.0.23",
+    "@types/node": "~15.0.1",
+    "@typescript-eslint/eslint-plugin": "~4.22.0",
+    "@typescript-eslint/parser": "~4.22.0",
+    "eslint": "~7.25.0",
+    "eslint-config-prettier": "~8.3.0",
+    "eslint-plugin-jest": "~24.3.6",
+    "jest": "~26.6.3",
+    "prettier": "~2.2.1",
+    "rimraf": "~3.0.2",
+    "ts-jest": "~26.5.5",
+    "tsutils": "~3.21.0",
+    "typescript": "~4.2.4"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node build/main.js",
+    "db": "sudo bash docker/build.sh",
+    "dev": "tsc -w -p tsconfig.release.json & nodemon --delay 3 build/main.js",
+    "clean": "rimraf coverage build tmp",
+    "build": "tsc -p tsconfig.release.json",
+    "build:watch": "tsc -w -p tsconfig.release.json",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/turinglabsorg/erc721-parser.git"
-  },
-  "keywords": [
-    "blockchain",
-    "ethereum",
-    "smart",
-    "contracts",
-    "etc721",
-    "nft",
-    "collectibles"
-  ],
   "author": "turinglabsorg",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/turinglabsorg/erc721-parser/issues"
+  "dependencies": {
+    "@textile/hub": "*",
+    "axios": "^0.21.1",
+    "dotenv": "*",
+    "ethers": "*",
+    "file-type": "github:sindresorhus/file-type",
+    "isomorphic-ws": "*",
+    "minimist": "*",
+    "mongoose": "^5.12.7",
+    "textile-uploader": "*",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "tslib": "~2.2.0",
+    "web3": "^1.3.5",
+    "ws": "*"
   },
-  "homepage": "https://github.com/turinglabsorg/erc721-parser#readme"
+  "volta": {
+    "node": "14.16.1"
+  }
 }
