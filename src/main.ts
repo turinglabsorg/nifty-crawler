@@ -41,13 +41,37 @@ async function run(smartcontract_address) {
     smartcontract_address,
     { gasLimit: "10000000" }
   );
-  const name = await nftContract.methods.name().call();
-  const symbol = await nftContract.methods.symbol().call();
-  const owner = await nftContract.methods.owner().call();
-  const contractURI = await nftContract.methods.contractURI().call();
+
   console.log('|* CONTRACT DETAILS *|')
+  let name = ""
+  let symbol = ""
+  let owner = ""
+  let contractURI = ""
+
+  try {
+    name = await nftContract.methods.name().call();
+  } catch (e) {
+    console.log('ERROR WHILE CATCHING NAME')
+  }
+  try {
+    symbol = await nftContract.methods.symbol().call();
+  } catch (e) {
+    console.log('ERROR WHILE CATCHING SYMBOL')
+  }
+  try {
+    owner = await nftContract.methods.owner().call();
+  } catch (e) {
+    console.log('ERROR WHILE CATCHING OWNER')
+  }
+  try {
+    contractURI = await nftContract.methods.contractURI().call();
+  } catch (e) {
+    console.log('ERROR WHILE CATCHING CONTRACT URI')
+  }
   console.log('>', name, symbol, owner, '<')
-  console.log('Contract URI is', contractURI)
+  if (contractURI !== "") {
+    console.log('Contract URI is', contractURI)
+  }
   let ended = false
   let i = 1;
   // Check if exists files folder
@@ -66,10 +90,12 @@ async function run(smartcontract_address) {
       if (check === null) {
         const owner = await nftContract.methods.ownerOf(i).call();
         const uri = await nftContract.methods.tokenURI(i).call();
-
+        let exploded = uri.split('/')
+        let last = exploded.length - 1
+        let tokenFolder = exploded[last]
         // Check if exists token folder
-        if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', ''))) {
-          fs.mkdirSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', ''));
+        if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
+          fs.mkdirSync('./files/' + smartcontract_address + '/' + tokenFolder);
         }
         console.log(uri, 'OWNER IS', owner)
         console.log('Downloading metadata file...')
@@ -81,8 +107,8 @@ async function run(smartcontract_address) {
           console.log('Metadata downloaded correctly!')
 
           // Check if exists metadata json
-          if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '')) + '/nft.json') {
-            fs.writeFileSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '') + '/nft.json', metadata.data)
+          if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
+            fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/nft.json', metadata.data)
           }
           let md = JSON.parse(Buffer.from(metadata.data).toString())
           if (md.image !== undefined) {
@@ -95,8 +121,8 @@ async function run(smartcontract_address) {
               let ft = await FileType.fromBuffer(image.data)
               console.log('File type is: ', ft)
               // Check if exists image file
-              if (!fs.existsSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '')) + '/' + uri.replace('https://ipfs.io/ipfs/', '') + '.' + ft.ext) {
-                fs.writeFileSync('./files/' + smartcontract_address + '/' + uri.replace('https://ipfs.io/ipfs/', '') + '/' + uri.replace('https://ipfs.io/ipfs/', '') + '.' + ft.ext, image.data)
+              if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
+                fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
               }
 
               // Saving in DB
@@ -118,6 +144,7 @@ async function run(smartcontract_address) {
       i++
     }
   } catch (e) {
+    console.log(e)
     isParsing = false
     ended = true
   }
@@ -131,8 +158,13 @@ app.get('/', (req, res) => {
 
 app.get('/run/:smart_contract', (req, res) => {
   if (!isParsing) {
-    run(req.params.smart_contract)
-    console.log(req.headers.host)
+    try {
+      run(req.params.smart_contract)
+      console.log(req.headers.host)
+    } catch (e) {
+      console.log(e)
+      isParsing = false
+    }
     res.send('Daemon started parsing')
   } else {
     res.send('Daemon is parsing yet')
