@@ -35,11 +35,10 @@ function run(smartcontract_address) {
     } else {
       console.log('Must set a smart contract address first.')
     }
-    const network = "mainnet";
-    const mnemonic = await ethers.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16));
+
     const provider = new HDWalletProvider(
-      mnemonic,
-      "https://eth-" + network + ".alchemyapi.io/v2/" + NODE_API_KEY
+      "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol",
+      "https://eth-mainnet.alchemyapi.io/v2/" + NODE_API_KEY
     );
     const web3Instance = new web3(provider);
     const nftContract = new web3Instance.eth.Contract(
@@ -202,6 +201,7 @@ app.get('/untrack/:smart_contract', async (req, res) => {
 })
 
 app.get('/contracts', async (req, res) => {
+  console.log(req.headers.host)
   const contracts = await Track.find()
   res.send(contracts)
 })
