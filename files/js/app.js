@@ -65,7 +65,7 @@ new Vue({
                 if (check.data.indexOf('yet') !== -1) {
                     let nfts = await window.axios.get('/contract/' + app.contract)
                     app.nfts = nfts.data
-                    app.counts = 0
+                    app.counts = nfts.data.length
                     app.centralized = 0
                     app.decentralized = 0
                     for (let k in app.nfts) {
