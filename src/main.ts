@@ -252,8 +252,16 @@ app.get('/untrack/:smart_contract', async (req, res) => {
 
 app.get('/contracts', async (req, res) => {
   console.log(req.headers.host)
+  let unique = []
+  let response = []
   const contracts = await Track.find()
-  res.send(contracts)
+  for(let k in contracts){
+    if(unique.indexOf(contracts[k].smart_contract)){
+      unique.push(contracts[k].smart_contract)
+      response.push(contracts[k])
+    }
+  }
+  res.send(response)
 })
 
 app.get('/contract/:smart_contract', async (req, res) => {
