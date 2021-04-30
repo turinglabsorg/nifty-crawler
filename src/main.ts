@@ -258,7 +258,7 @@ app.get('/contracts', async (req, res) => {
   let response = []
   const contracts = await Track.find()
   for (let k in contracts) {
-    let sc = contracts[k].smart_contract.trim()
+    let sc = contracts[k].smart_contract.trim().toUpperCase()
     if (unique.indexOf(sc) === -1) {
       unique.push(sc)
       response.push(contracts[k])
@@ -275,7 +275,7 @@ app.get('/contract/:smart_contract', async (req, res) => {
       contract = split[k]
     }
   }
-  const NFTs = await NFT.find({ smart_contract: contract })
+  const NFTs = await NFT.find({ smart_contract: { $regex:/^contract$/i } })
   res.send(NFTs)
 })
 
