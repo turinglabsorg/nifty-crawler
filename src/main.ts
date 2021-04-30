@@ -217,14 +217,14 @@ app.get('/track/:smart_contract', async (req, res) => {
     let contract = ""
     for (let k in split) {
       if (split[k].indexOf('0x') !== -1) {
-        contract = split[k]
+        contract = split[k].trim()
       }
     }
     if (contract !== "") {
       const check = await Track.findOne({ smart_contract: contract })
       if (check === null) {
         const track = new Track({
-          smart_contract: req.params.smart_contract,
+          smart_contract: contract,
           timestamp: new Date().getTime()
         });
         await track.save()
