@@ -2,7 +2,7 @@
 logs
 *.log
 npm-debug.log*
-files/*
+files/0x*
 !files/.DOWNLOAD_FILES_WILL_APPEAR_HERE
 
 # Dependencies

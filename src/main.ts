@@ -20,11 +20,13 @@ const NFT = mongoose.model('NFT', {
   tokenID: String,
   tokenURI: String,
   metadata: Object,
-  filetype: Object
+  filetype: Object,
+  timestamp: Number
 });
 
 const Track = mongoose.model('track', {
-  smart_contract: String
+  smart_contract: String,
+  timestamp: Number
 });
 
 function run(smartcontract_address) {
@@ -88,9 +90,38 @@ function run(smartcontract_address) {
       fs.mkdirSync('./files/' + smartcontract_address);
     }
 
+    const latest = await web3Instance.eth.getBlockNumber()
+
+    let fromBlock = latest
+    let toBlock = latest
+    let finished = false
+    let max = 999999
+
+    while (!finished) {
+      fromBlock = toBlock - max
+      if (fromBlock < 0) {
+        fromBlock = 0
+        finished = true
+      }
+      console.log('Analyzing from ' + fromBlock + ' / ' + toBlock)
+      let result = await analyze(fromBlock, toBlock, nftContract, smartcontract_address)
+      if (result === false) {
+        let loweringpercent = max / 100 * 30
+        max = parseInt((max - loweringpercent).toFixed(0))
+      } else {
+        max = 999999
+        toBlock = fromBlock
+      }
+    }
+    response(true)
+  })
+}
+
+function analyze(from, to, nftContract, smartcontract_address) {
+  return new Promise(async response => {
     nftContract.getPastEvents('Transfer', {
-      fromBlock: 0,
-      toBlock: 'latest'
+      fromBlock: from,
+      toBlock: to
     }, async function (error, events) {
       if (!error) {
         for (var i = 0; i < events.length; i++) {
@@ -147,7 +178,8 @@ function run(smartcontract_address) {
                     tokenID: events[i].returnValues.tokenId,
                     tokenURI: uri,
                     metadata: md,
-                    filetype: ft
+                    filetype: ft,
+                    timestamp: new Date().getTime()
                   });
                   await nft.save()
                 }
@@ -159,9 +191,9 @@ function run(smartcontract_address) {
         }
         response(true)
         console.log('ENDED PARSING')
-      }else{
+      } else {
         response(false)
-        console.log('ERROR PARSING')
+        console.log('PARSING ERROR, TOO EVENTS')
       }
     })
   })
@@ -169,7 +201,7 @@ function run(smartcontract_address) {
 
 async function daemon() {
   console.log('Daemon is starting.')
-  const toTrack = await Track.find()
+  const toTrack = await Track.find().sort({ timestamp: -1 })
   for (let k in toTrack) {
     await run(toTrack[k].smart_contract)
   }
@@ -182,21 +214,32 @@ async function daemon() {
 daemon()
 
 // Public API
-app.get('/', (req, res) => {
-  console.log(req.headers.host)
-  res.send('API is working!')
-})
-
 app.get('/track/:smart_contract', async (req, res) => {
-  const check = await Track.findOne({ smart_contract: req.params.smart_contract })
-  if (check === null) {
-    const track = new Track({
-      smart_contract: req.params.smart_contract
-    });
-    await track.save()
-    res.send('Smart contract added to tracker.')
+  if (req.params.smart_contract.indexOf('0x') !== -1) {
+    let split = req.params.smart_contract.split('/')
+    let contract = ""
+    for (let k in split) {
+      if (split[k].indexOf('0x') !== -1) {
+        contract = split[k]
+      }
+    }
+    if (contract !== "") {
+      const check = await Track.findOne({ smart_contract: contract })
+      if (check === null) {
+        const track = new Track({
+          smart_contract: req.params.smart_contract,
+          timestamp: new Date().getTime()
+        });
+        await track.save()
+        res.send('Smart contract added to tracker.')
+      } else {
+        res.send('Smart contract exists yet.')
+      }
+    } else {
+      res.send('Malformed request')
+    }
   } else {
-    res.send('Smart contract exists yet.')
+    res.send('Malformed request')
   }
 })
 
@@ -216,10 +259,25 @@ app.get('/contracts', async (req, res) => {
   res.send(contracts)
 })
 
-app.get('/:smart_contract', async (req, res) => {
-  const NFTs = await NFT.find({ smart_contract: req.params.smart_contract })
+app.get('/contract/:smart_contract', async (req, res) => {
+  let split = req.params.smart_contract.split('/')
+  let contract = ""
+  for (let k in split) {
+    if (split[k].indexOf('0x') !== -1) {
+      contract = split[k]
+    }
+  }
+  const NFTs = await NFT.find({ smart_contract: contract })
   res.send(NFTs)
 })
+
+app.get('/nfts', async (req, res) => {
+  console.log(req.headers.host)
+  const NFTs = await NFT.find().sort({ timestamp: -1 })
+  res.send(NFTs)
+})
+
+app.use(express.static('files'))
 
 app.listen(port, () => {
   console.log(`Erc721 Parser listening at http://localhost:${port}`)

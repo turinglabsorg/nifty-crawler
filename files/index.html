@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>NFT Crawler - Let's see if your NFT is centralized or not.</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v5.15.3/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,100i,300,300i,400,400i,700,700i,900,900i"
+        rel="stylesheet" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="css/styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#!">NFT CRAWLER</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span
+                    class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" href="https://discord.gg/Qy5Z5MTQ47" target="_blank">Help</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div id="app">
+        <header class="masthead text-center text-white">
+            <div class="masthead-content">
+                <div class="container">
+                    <h1 class="masthead-heading mb-0">Is your NFT a good one?</h1>
+                    <h2 class="masthead-subheading mb-0">NFTs can be centralized,<br>don't trust, verify!</h2><br><br>
+                    <div class="input-group mt-5">
+                        <input type="text" class="form-control" v-model="contract"
+                            style="border-radius:50px; line-height:30px; font-size:25px; padding:20px;"
+                            placeholder="Insert contract address or OpenSea URL">
+                    </div>
+                    <a class="btn btn-primary btn-xl rounded-pill mt-5" style="cursor:pointer" v-on:click="checkContract" href="#!">Check this contract</a><br>
+                    <div v-if="contract" style="cursor:pointer" v-on:click="resetSearch">Reset search</div>
+                </div>
+            </div>
+            <div class="bg-circle-1 bg-circle"></div>
+            <div class="bg-circle-2 bg-circle"></div>
+            <div class="bg-circle-3 bg-circle"></div>
+            <div class="bg-circle-4 bg-circle"></div>
+        </header>
+        <section>
+            <div class="container mt-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-12 text-center">
+                        <h2 v-if="!contract">We've analyzed {{ counts }} NFTs</h2>
+                        <h2 v-if="contract">This collection contains {{ counts }} NFTs</h2>
+                        <h3 style="font-size:16px;">{{ decentralized }} out of {{ counts }} are decentralized!</h3>
+                        <table class="table table-striped mt-5 text-left">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Smart contract</th>
+                                    <th scope="col">Token Id</th>
+                                    <th scope="col">Token URI</th>
+                                    <th scope="col" class="text-center">Media</th>
+                                    <th scope="col" class="text-center">NFT Centralized</th>
+                                    <th scope="col" class="text-center">Image Centralized</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="nft in chunked[page]" v-bind:key="nft.tokenURI">
+                                    <th scope="row"><a :href="'https://etherscan.io/address/'+ nft.smart_contract" target="_blank">{{ nft.smart_contract.substr(0,8) }}...{{ nft.smart_contract.substr(-8) }}</a></th>
+                                    <td>{{ nft.tokenID }}</td>
+                                    <td><a :href="nft.tokenURI" target="_blank">{{ nft.tokenURI.substr(0,12) }}...{{ nft.tokenURI.substr(-12) }}</a></td>
+                                    <td class="text-center"><a :href="nft.metadata.image" target="_blank"><img :src="nft.metadata.image" height="30"></a></td>
+                                    <td class="text-center">
+                                        <span v-if="nft.tokenURI.indexOf('ipfs') !== -1">YES</span>
+                                        <span v-if="nft.tokenURI.indexOf('ipfs') === -1">NO</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span v-if="nft.metadata.image.indexOf('ipfs') !== -1">YES</span>
+                                        <span v-if="nft.metadata.image.indexOf('ipfs') === -1">NO</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <hr>
+                        <button class="btn btn-primary" style="float:left" v-on:click="removePage()">Back</button>
+                        <button class="btn btn-primary" style="float:right" v-on:click="addPage()">Next</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Footer-->
+    <footer class="py-5 bg-black">
+        <div class="container">
+            <p class="m-0 text-center small">Project proudly <a href="https://github.com/turinglabsorg/erc721-parser"
+                    target="_blank">open-sourced</a> by <a href="https://nftstud.io" target="_blank">NFTStudio</a></p>
+        </div>
+    </footer>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/app.js"></script>
+</body>
+
+</html>
