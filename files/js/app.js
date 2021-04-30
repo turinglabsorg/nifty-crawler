@@ -97,6 +97,7 @@ new Vue({
                             app.centralized++
                         }
                     }
+                    app.percentage = (app.decentralized / app.counts * 100).toFixed(2)
                     app.chunked = app.chunk(app.nfts, 10)
                     app.page = 0
                 } else {
