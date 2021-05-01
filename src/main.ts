@@ -118,7 +118,7 @@ function run(smartcontract_address) {
 function analyze(from, to, nftContract, smartcontract_address) {
   return new Promise(async response => {
     let timeout = setTimeout(function () {
-      console.log('RPC timed out, restarting..')
+      console.log('RPC timed out while asking transfers, restarting..')
       response(false)
     }, 15000)
 
@@ -138,7 +138,7 @@ function analyze(from, to, nftContract, smartcontract_address) {
             try {
               console.log('Taking tokenURI..')
               timeout = setTimeout(function () {
-                console.log('RPC timed out, restarting..')
+                console.log('RPC timed out while asking tokenURI, restarting..')
                 response(false)
               }, 5000)
               uri = await nftContract.methods.tokenURI(events[i].returnValues.tokenId).call();
