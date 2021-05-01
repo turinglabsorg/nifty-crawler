@@ -52,6 +52,10 @@ function run(smartcontract_address) {
       let name = ""
       let symbol = ""
       let contractDB = await Track.findOne({ smart_contract: smartcontract_address })
+      timeout = setTimeout(function(){
+        console.log('RPC timed out while asking for details')
+        response(false)
+      }, 15000)
       try {
         name = await nftContract.methods.name().call();
         contractDB.name = name
@@ -64,6 +68,7 @@ function run(smartcontract_address) {
       } catch (e) {
         console.log('ERROR WHILE CATCHING SYMBOL')
       }
+      clearTimeout(timeout)
       console.log('>', name, symbol, '<')
       if (name === "" && symbol === "") {
         console.log('Can\'t get name and symbol, deleting.')
