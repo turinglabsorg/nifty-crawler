@@ -168,6 +168,9 @@ function analyze(from, to, nftContract, smartcontract_address) {
                 if (md.image !== undefined) {
                   try {
                     console.log('Downloading media file...')
+                    if(md.image.indexOf('ipfs://') !== -1){
+                      md.image = md.image.replace('ipfs://', 'https://ipfs.io/ipfs/')
+                    }
                     let image = await axios.get(md.image, {
                       responseType: 'arraybuffer'
                     })
