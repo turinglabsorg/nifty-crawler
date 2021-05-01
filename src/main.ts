@@ -14,7 +14,7 @@ const express = require('express')
 const app = express()
 const port = 3000
 let isParsing = false
-
+let timeout
 const NFT = mongoose.model('NFT', {
   smart_contract: String,
   tokenID: String,
@@ -83,7 +83,7 @@ function run(smartcontract_address) {
         fs.mkdirSync('./files/' + smartcontract_address);
       }
       let latest = null
-      let timeout = setTimeout(function(){
+      timeout = setTimeout(function(){
         console.log('RPC timed out while asking for latest block')
         response(false)
       }, 15000)
@@ -122,7 +122,7 @@ function run(smartcontract_address) {
 
 function analyze(from, to, nftContract, smartcontract_address) {
   return new Promise(async response => {
-    let timeout = setTimeout(function () {
+    timeout = setTimeout(function () {
       console.log('RPC timed out while asking transfers, restarting..')
       response(false)
     }, 15000)
