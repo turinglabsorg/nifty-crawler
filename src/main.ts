@@ -48,10 +48,9 @@ function run(smartcontract_address) {
         { gasLimit: "10000000" }
       );
 
-      console.log('|* CONTRACT DETAILS *|')
+      console.log('Taking contract details...')
       let name = ""
       let symbol = ""
-      let contractURI = ""
       let contractDB = await Track.findOne({ smart_contract: smartcontract_address })
       try {
         name = await nftContract.methods.name().call();
