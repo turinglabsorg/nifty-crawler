@@ -120,13 +120,20 @@ function analyze(from, to, nftContract, smartcontract_address) {
       toBlock: to
     }, async function (error, events) {
       if (!error) {
+        let timeout
         for (var i = 0; i < events.length; i++) {
+          clearTimeout(timeout)
           console.log('Parsing tokenId: ' + events[i].returnValues.tokenId)
           const check = await NFT.findOne({ tokenID: events[i].returnValues.tokenId, smart_contract: smartcontract_address })
           if (check === null) {
             let tokenFolder = ""
             let uri = ""
             try {
+              console.log('Taking tokenURI..')
+              timeout = setTimeout(function () {
+                console.log('RPC timed out, restarting..')
+                response(false)
+              }, 5000)
               uri = await nftContract.methods.tokenURI(events[i].returnValues.tokenId).call();
               let exploded = uri.split('/')
               let last = exploded.length - 1
