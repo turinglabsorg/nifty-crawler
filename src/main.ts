@@ -65,9 +65,9 @@ function run(smartcontract_address) {
         console.log('ERROR WHILE CATCHING SYMBOL')
       }
       console.log('>', name, symbol, '<')
-      if(name === "" && symbol === ""){
+      if (name === "" && symbol === "") {
         await Track.deleteOne({ smart_contract: smartcontract_address })
-      }else{
+      } else {
         contractDB.save()
       }
 
@@ -150,33 +150,36 @@ function analyze(from, to, nftContract, smartcontract_address) {
               }
               let md = JSON.parse(Buffer.from(metadata.data).toString())
               if (md.image !== undefined) {
-                console.log('Downloading media file...')
-                let image = await axios.get(md.image, {
-                  responseType: 'arraybuffer'
-                })
-                if (image.data !== undefined) {
-                  console.log('Image downloaded correctly!')
-                  let ft = await FileType.fromBuffer(image.data)
-                  console.log('File type is: ', ft)
-                  // Check if exists image file
-                  if (ft !== undefined) {
-                    if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
-                      fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
+                try {
+                  console.log('Downloading media file...')
+                  let image = await axios.get(md.image, {
+                    responseType: 'arraybuffer'
+                  })
+                  if (image.data !== undefined) {
+                    console.log('Image downloaded correctly!')
+                    let ft = await FileType.fromBuffer(image.data)
+                    console.log('File type is: ', ft)
+                    // Check if exists image file
+                    if (ft !== undefined) {
+                      if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext)) {
+                        fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft.ext, image.data)
+                      }
                     }
                   }
-
-                  // Saving in DB
-                  console.log('Saving in DB')
-                  const nft = new NFT({
-                    smart_contract: smartcontract_address,
-                    tokenID: events[i].returnValues.tokenId,
-                    tokenURI: uri,
-                    metadata: md,
-                    filetype: ft,
-                    timestamp: new Date().getTime()
-                  });
-                  await nft.save()
+                } catch (e) {
+                  console.log('Can\'t download file')
                 }
+                // Saving in DB
+                console.log('Saving in DB')
+                const nft = new NFT({
+                  smart_contract: smartcontract_address,
+                  tokenID: events[i].returnValues.tokenId,
+                  tokenURI: uri,
+                  metadata: md,
+                  filetype: ft,
+                  timestamp: new Date().getTime()
+                });
+                await nft.save()
               }
             }
           } else {
