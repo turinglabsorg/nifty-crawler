@@ -65,16 +65,8 @@ function run(smartcontract_address) {
       } catch (e) {
         console.log('ERROR WHILE CATCHING SYMBOL')
       }
-      try {
-        contractURI = await nftContract.methods.contractURI().call();
-      } catch (e) {
-        console.log('ERROR WHILE CATCHING CONTRACT URI')
-      }
       console.log('>', name, symbol, '<')
       contractDB.save()
-      if (contractURI !== "") {
-        console.log('Contract URI is', contractURI)
-      }
 
       // Check if exists files folder
       if (!fs.existsSync('./files')) {
