@@ -149,6 +149,7 @@ function analyze(from, to, nftContract, smartcontract_address) {
                 fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/nft.json', metadata.data)
               }
               let md = JSON.parse(Buffer.from(metadata.data).toString())
+              let ft = ""
               if (md.image !== undefined) {
                 try {
                   console.log('Downloading media file...')
@@ -157,7 +158,7 @@ function analyze(from, to, nftContract, smartcontract_address) {
                   })
                   if (image.data !== undefined) {
                     console.log('Image downloaded correctly!')
-                    let ft = await FileType.fromBuffer(image.data)
+                    ft = await FileType.fromBuffer(image.data)
                     console.log('File type is: ', ft)
                     // Check if exists image file
                     if (ft !== undefined) {
