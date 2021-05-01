@@ -65,7 +65,11 @@ function run(smartcontract_address) {
         console.log('ERROR WHILE CATCHING SYMBOL')
       }
       console.log('>', name, symbol, '<')
-      contractDB.save()
+      if(name === "" && symbol === ""){
+        await Track.deleteOne({ smart_contract: smartcontract_address })
+      }else{
+        contractDB.save()
+      }
 
       // Check if exists files folder
       if (!fs.existsSync('./files')) {
@@ -213,7 +217,7 @@ app.get('/track/:smart_contract', async (req, res) => {
         contract = split[k].trim()
       }
     }
-    if (contract !== "") {
+    if (contract !== "" && req.params.smart_contract.length === 44) {
       const check = await Track.findOne({ smart_contract: contract })
       if (check === null) {
         const track = new Track({

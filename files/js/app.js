@@ -101,7 +101,7 @@ new Vue({
                     app.chunked = app.chunk(app.nfts, 10)
                     app.page = 0
                 } else {
-                    alert('We\'re not tracking this smart contract but we queued the download, please grab a coffee and came back later!')
+                    alert(check.data)
                 }
             }
         },
