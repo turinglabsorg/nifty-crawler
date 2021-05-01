@@ -66,7 +66,9 @@ function run(smartcontract_address) {
       }
       console.log('>', name, symbol, '<')
       if (name === "" && symbol === "") {
+        console.log('Can\'t get name and symbol, deleting.')
         await Track.deleteOne({ smart_contract: smartcontract_address })
+        response(false)
       } else {
         contractDB.save()
       }
