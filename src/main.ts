@@ -83,10 +83,15 @@ function run(smartcontract_address) {
         fs.mkdirSync('./files/' + smartcontract_address);
       }
       let latest = null
+      let timeout = setTimeout(function(){
+        console.log('RPC timed out while asking for latest block')
+        response(false)
+      }, 15000)
       while (latest === null) {
         console.log('Asking for latest block')
         latest = await web3Instance.eth.getBlockNumber()
       }
+      clearTimeout(timeout)
       let fromBlock = latest
       let toBlock = latest
       let finished = false
