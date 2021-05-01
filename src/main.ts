@@ -120,12 +120,13 @@ function analyze(from, to, nftContract, smartcontract_address) {
     let timeout = setTimeout(function () {
       console.log('RPC timed out, restarting..')
       response(false)
-    }, 5000)
-    
+    }, 15000)
+
     nftContract.getPastEvents('Transfer', {
       fromBlock: from,
       toBlock: to
     }, async function (error, events) {
+      clearTimeout(timeout)
       if (!error) {
         for (var i = 0; i < events.length; i++) {
           clearTimeout(timeout)
@@ -150,8 +151,10 @@ function analyze(from, to, nftContract, smartcontract_address) {
               }
             } catch (e) {
               console.log('Can\'t get tokenURI')
+              clearTimeout(timeout)
             }
             if (uri !== "") {
+              clearTimeout(timeout)
               let metadata
               try {
                 console.log('Downloading metadata file...')
