@@ -117,12 +117,16 @@ function run(smartcontract_address) {
 
 function analyze(from, to, nftContract, smartcontract_address) {
   return new Promise(async response => {
+    let timeout = setTimeout(function () {
+      console.log('RPC timed out, restarting..')
+      response(false)
+    }, 5000)
+    
     nftContract.getPastEvents('Transfer', {
       fromBlock: from,
       toBlock: to
     }, async function (error, events) {
       if (!error) {
-        let timeout
         for (var i = 0; i < events.length; i++) {
           clearTimeout(timeout)
           console.log('Parsing tokenId: ' + events[i].returnValues.tokenId)
