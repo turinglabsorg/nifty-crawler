@@ -305,7 +305,7 @@ app.get('/contracts', async (req, res) => {
   const contracts = await Track.find().sort({ name: 1 })
   for (let k in contracts) {
     let sc = contracts[k].smart_contract.trim().toUpperCase()
-    if (unique.indexOf(sc) === -1 && sc.name !== "") {
+    if (unique.indexOf(sc) === -1 && sc.name !== undefined && sc.name.length > 0) {
       unique.push(sc)
       response.push(contracts[k])
     }
