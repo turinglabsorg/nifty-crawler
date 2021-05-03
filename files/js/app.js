@@ -10,33 +10,36 @@ new Vue({
         contract: "",
         contracts: {},
         percentage: 0,
-        onlyDecentralized: false
+        onlyDecentralized: false,
+        isLoading: false
     },
     async mounted() {
         const app = this
         app.getData()
         setInterval(function () {
-            app.getData()
+            if (app.contract === "" && app.page === 1) {
+                app.getData()
+            }
         }, 30000)
     },
     methods: {
         async getData() {
             const app = this
-            if (app.contract === "") {
-                let nfts = await window.axios.get('/nfts/' + app.page)
-                app.counts = nfts.data.count
-                app.decentralized = nfts.data.decentralized
-                app.centralized = 0
-                app.nfts = nfts.data.nfts
-                app.percentage = nfts.data.percentage
+            app.isLoading = true
+            let nfts = await window.axios.get('/nfts/' + app.page)
+            app.counts = nfts.data.count
+            app.decentralized = nfts.data.decentralized
+            app.centralized = 0
+            app.nfts = nfts.data.nfts
+            app.percentage = nfts.data.percentage
 
-                let contractsDB = await window.axios.get('/contracts')
-                let contracts = {}
-                for (let k in contractsDB.data) {
-                    contracts[contractsDB.data[k].smart_contract] = contractsDB.data[k]
-                }
-                app.contracts = contracts
+            let contractsDB = await window.axios.get('/contracts')
+            let contracts = {}
+            for (let k in contractsDB.data) {
+                contracts[contractsDB.data[k].smart_contract] = contractsDB.data[k]
             }
+            app.contracts = contracts
+            app.isLoading = false
         },
         addPage() {
             const app = this
@@ -79,12 +82,14 @@ new Vue({
         async filterNFTs() {
             const app = this
             if (app.contract !== "") {
+                app.isLoading = true
                 let nfts = await window.axios.get('/contract/' + app.contract + '/' + app.page)
                 app.counts = nfts.data.count
                 app.decentralized = nfts.data.decentralized
                 app.centralized = 0
                 app.nfts = nfts.data.nfts
                 app.percentage = nfts.data.percentage
+                app.isLoading = false
             } else {
                 app.getData()
             }
