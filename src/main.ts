@@ -14,7 +14,9 @@ const express = require('express')
 const app = express()
 const port = 3000
 let isParsing = false
+const download_media = false
 let timeout
+
 const NFT = mongoose.model('NFT', {
   smart_contract: String,
   tokenID: String,
@@ -202,9 +204,11 @@ function analyze(from, to, nftContract, smartcontract_address) {
                       ft = await FileType.fromBuffer(image.data)
                       console.log('File type is: ', ft)
                       // Check if exists image file
-                      if (ft !== undefined) {
-                        if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'])) {
-                          fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'], image.data)
+                      if (download_media) {
+                        if (ft !== undefined) {
+                          if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'])) {
+                            fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'], image.data)
+                          }
                         }
                       }
                     }
@@ -313,7 +317,7 @@ app.get('/contract/:smart_contract/:page', async (req, res) => {
 
   var perPage = 10
   var page = req.params.page || 1
-  
+
   let split = req.params.smart_contract.split('/')
   let contract = ""
   for (let k in split) {
@@ -322,37 +326,37 @@ app.get('/contract/:smart_contract/:page', async (req, res) => {
     }
   }
 
-  let decentralized = await NFT.find({ smart_contract: { '$regex': '^' + contract + '$', '$options': 'i' } })
-  let d = decentralized.filter(function (nft) {
-    return (nft.metadata.image.indexOf('ipfs') !== -1 && nft.tokenURI.indexOf('ipfs') !== -1);
-  });
+  if (contract !== "" && contract.length === 42) {
+    let decentralized = await NFT.find({ smart_contract: { '$regex': '^' + contract + '$', '$options': 'i' } })
+    let count = decentralized.length
+    let d = decentralized.filter(function (nft) {
+      return (nft.metadata.image.indexOf('ipfs') !== -1 && nft.tokenURI.indexOf('ipfs') !== -1);
+    });
 
-  NFT
-    .find()
-    .sort({ timestamp: -1 })
-    .skip((perPage * page) - perPage)
-    .limit(perPage)
-    .exec(function (err, nfts) {
-      if (!err) {
-        NFT.countDocuments().exec(function (err, count) {
-          if (!err) {
-            let percentage = (d.length / count * 100).toFixed(2)
-            res.send({
-              count: count,
-              decentralized: d.length,
-              percentage: percentage,
-              nfts: nfts,
-              current: page,
-              pages: Math.ceil(count / perPage)
-            })
-          } else {
-            res.send('API errored')
-          }
-        })
-      } else {
-        res.send('API errored')
-      }
-    })
+    NFT
+      .find({ smart_contract: { '$regex': '^' + contract + '$', '$options': 'i' } })
+      .sort({ timestamp: -1 })
+      .skip((perPage * page) - perPage)
+      .limit(perPage)
+      .exec(function (err, nfts) {
+        if (!err) {
+          let percentage = (d.length / count * 100).toFixed(2)
+          res.send({
+            contract: contract,
+            count: count,
+            decentralized: d.length,
+            percentage: percentage,
+            nfts: nfts,
+            current: page,
+            pages: Math.ceil(count / perPage)
+          })
+        } else {
+          res.send('API errored')
+        }
+      })
+  } else {
+    res.send('Malformed request')
+  }
 })
 
 app.get('/nfts/:page', async (req, res) => {
@@ -360,10 +364,11 @@ app.get('/nfts/:page', async (req, res) => {
   var perPage = 10
   var page = req.params.page || 1
 
-  let decentralized = await NFT.find({ tokenURI: { '$regex': '|ipfs|', '$options': 'i' } })
+  let decentralized = await NFT.find({ tokenURI: /ipfs/ })
   let d = decentralized.filter(function (nft) {
     return nft.metadata.image.indexOf('ipfs') !== -1;
   });
+
   NFT
     .find()
     .sort({ timestamp: -1 })

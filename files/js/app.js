@@ -42,14 +42,22 @@ new Vue({
             const app = this
             let next = app.page + 1
             app.page = next
-            app.getData()
+            if (app.contract === "") {
+                app.getData()
+            } else {
+                app.filterNFTs()
+            }
         },
         removePage() {
             const app = this
             let prev = app.page - 1
             if (prev >= 1) {
                 app.page = prev
-                app.getData()
+                if (app.contract === "") {
+                    app.getData()
+                } else {
+                    app.filterNFTs()
+                }
             }
         },
         async checkContract() {
@@ -62,23 +70,14 @@ new Vue({
         async resetSearch() {
             const app = this
             this.contract = ""
-            let nfts = await window.axios.get('/nfts')
-            app.counts = nfts.data.length
+            app.counts = 0
             app.centralized = 0
             app.decentralized = 0
-            app.nfts = nfts.data
-            for (let k in app.nfts) {
-                if (app.nfts[k].tokenURI.indexOf('ipfs') !== -1) {
-                    app.decentralized++
-                } else {
-                    app.centralized++
-                }
-            }
-            app.chunked = app.chunk(app.nfts, 10)
+            app.page = 0
+            app.getData()
         },
-        async filterNfts() {
+        async filterNFTs() {
             const app = this
-            app.page = 1
             if (app.contract !== "") {
                 let nfts = await window.axios.get('/contract/' + app.contract + '/' + app.page)
                 app.counts = nfts.data.count
@@ -86,13 +85,6 @@ new Vue({
                 app.centralized = 0
                 app.nfts = nfts.data.nfts
                 app.percentage = nfts.data.percentage
-
-                let contractsDB = await window.axios.get('/contracts')
-                let contracts = {}
-                for (let k in contractsDB.data) {
-                    contracts[contractsDB.data[k].smart_contract] = contractsDB.data[k]
-                }
-                app.contracts = contracts
             } else {
                 app.getData()
             }
