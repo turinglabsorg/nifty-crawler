@@ -68,7 +68,7 @@
                             percentage }}%)!</h3>
                         <hr>
                         <div class="form-group">
-                            <select class="form-control" v-on:change="checkContract()" v-model="contract">
+                            <select class="form-control" v-on:change="filterNFTs()" v-model="contract">
                                 <option value="">Show all Smart Contracts</option>
                                 <option v-for="contract in contracts" :value="contract.smart_contract" v-bind:key="contract.smart_contract">{{
                                     contract.name }} ({{ contract.symbol }}) {{ contract.smart_contract }}</option>
@@ -88,7 +88,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="nft in chunked[page]" v-bind:key="nft.tokenURI">
+                                    <tr v-for="nft in nfts" v-bind:key="nft.tokenURI">
                                         <th scope="row">
                                             <a v-if="contracts[nft.smart_contract]"
                                                 :href="'https://etherscan.io/address/'+ nft.smart_contract"

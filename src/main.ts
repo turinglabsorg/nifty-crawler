@@ -28,7 +28,8 @@ const Track = mongoose.model('track', {
   smart_contract: String,
   name: String,
   symbol: String,
-  timestamp: Number
+  timestamp: Number,
+  last_update: Number
 });
 
 function run(smartcontract_address) {
@@ -52,7 +53,9 @@ function run(smartcontract_address) {
       let name = ""
       let symbol = ""
       let contractDB = await Track.findOne({ smart_contract: smartcontract_address })
-      timeout = setTimeout(function(){
+      contractDB.last_update = new Date().getTime()
+      contractDB.save()
+      timeout = setTimeout(function () {
         console.log('RPC timed out while asking for details')
         response(false)
       }, 15000)
@@ -88,7 +91,7 @@ function run(smartcontract_address) {
         fs.mkdirSync('./files/' + smartcontract_address);
       }
       let latest = null
-      timeout = setTimeout(function(){
+      timeout = setTimeout(function () {
         console.log('RPC timed out while asking for latest block')
         response(false)
       }, 15000)
@@ -188,7 +191,7 @@ function analyze(from, to, nftContract, smartcontract_address) {
                   try {
                     console.log('Downloading media file...')
                     if (md.image.indexOf('ipfs://') !== -1) {
-                      md.image = md.image.replace('ipfs://ipfs','ipfs://')
+                      md.image = md.image.replace('ipfs://ipfs', 'ipfs://')
                       md.image = md.image.replace('ipfs://', 'https://ipfs.io/ipfs/')
                     }
                     let image = await axios.get(md.image, {
@@ -239,7 +242,7 @@ function analyze(from, to, nftContract, smartcontract_address) {
 
 async function daemon() {
   console.log('Daemon is starting.')
-  const toTrack = await Track.find().sort({ timestamp: -1 })
+  const toTrack = await Track.find().sort({ last_update: 1 })
   for (let k in toTrack) {
     await run(toTrack[k].smart_contract)
   }
@@ -261,7 +264,7 @@ app.get('/track/:smart_contract', async (req, res) => {
         contract = split[k].trim()
       }
     }
-    if (contract !== "" && req.params.smart_contract.length === 44) {
+    if (contract !== "" && contract.length === 42) {
       const check = await Track.findOne({ smart_contract: contract })
       if (check === null) {
         const track = new Track({
@@ -274,7 +277,7 @@ app.get('/track/:smart_contract', async (req, res) => {
         res.send('Smart contract exists yet.')
       }
     } else {
-      res.send('Malformed request')
+      res.send('Contract address not valid')
     }
   } else {
     res.send('Malformed request')
@@ -306,7 +309,11 @@ app.get('/contracts', async (req, res) => {
   res.send(response)
 })
 
-app.get('/contract/:smart_contract', async (req, res) => {
+app.get('/contract/:smart_contract/:page', async (req, res) => {
+
+  var perPage = 10
+  var page = req.params.page || 1
+  
   let split = req.params.smart_contract.split('/')
   let contract = ""
   for (let k in split) {
@@ -314,14 +321,75 @@ app.get('/contract/:smart_contract', async (req, res) => {
       contract = split[k]
     }
   }
-  const NFTs = await NFT.find({ smart_contract: { '$regex': '^' + contract + '$', '$options': 'i' } })
-  res.send(NFTs)
+
+  let decentralized = await NFT.find({ smart_contract: { '$regex': '^' + contract + '$', '$options': 'i' } })
+  let d = decentralized.filter(function (nft) {
+    return (nft.metadata.image.indexOf('ipfs') !== -1 && nft.tokenURI.indexOf('ipfs') !== -1);
+  });
+
+  NFT
+    .find()
+    .sort({ timestamp: -1 })
+    .skip((perPage * page) - perPage)
+    .limit(perPage)
+    .exec(function (err, nfts) {
+      if (!err) {
+        NFT.countDocuments().exec(function (err, count) {
+          if (!err) {
+            let percentage = (d.length / count * 100).toFixed(2)
+            res.send({
+              count: count,
+              decentralized: d.length,
+              percentage: percentage,
+              nfts: nfts,
+              current: page,
+              pages: Math.ceil(count / perPage)
+            })
+          } else {
+            res.send('API errored')
+          }
+        })
+      } else {
+        res.send('API errored')
+      }
+    })
 })
 
-app.get('/nfts', async (req, res) => {
-  console.log(req.headers.host)
-  const NFTs = await NFT.find().sort({ timestamp: -1 })
-  res.send(NFTs)
+app.get('/nfts/:page', async (req, res) => {
+
+  var perPage = 10
+  var page = req.params.page || 1
+
+  let decentralized = await NFT.find({ tokenURI: { '$regex': '|ipfs|', '$options': 'i' } })
+  let d = decentralized.filter(function (nft) {
+    return nft.metadata.image.indexOf('ipfs') !== -1;
+  });
+  NFT
+    .find()
+    .sort({ timestamp: -1 })
+    .skip((perPage * page) - perPage)
+    .limit(perPage)
+    .exec(function (err, nfts) {
+      if (!err) {
+        NFT.countDocuments().exec(function (err, count) {
+          if (!err) {
+            let percentage = (d.length / count * 100).toFixed(2)
+            res.send({
+              count: count,
+              decentralized: d.length,
+              percentage: percentage,
+              nfts: nfts,
+              current: page,
+              pages: Math.ceil(count / perPage)
+            })
+          } else {
+            res.send('API errored')
+          }
+        })
+      } else {
+        res.send('API errored')
+      }
+    })
 })
 
 app.use(express.static('files'))
