@@ -11,13 +11,15 @@ new Vue({
         contracts: {},
         percentage: 0,
         onlyDecentralized: false,
-        isLoading: false
+        isLoading: false,
+        auto: false
     },
     async mounted() {
         const app = this
         app.getData()
         setInterval(function () {
             if (app.contract === "" && app.page === 1) {
+                app.auto = true
                 app.getData()
             }
         }, 30000)
@@ -25,7 +27,9 @@ new Vue({
     methods: {
         async getData() {
             const app = this
-            app.isLoading = true
+            if (!app.auto) {
+                app.isLoading = true
+            }
             let nfts = await window.axios.get('/nfts/' + app.page)
             app.counts = nfts.data.count
             app.decentralized = nfts.data.decentralized
