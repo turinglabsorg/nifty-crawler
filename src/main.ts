@@ -123,6 +123,7 @@ function run(smartcontract_address) {
           toBlock = fromBlock
         }
       }
+      provider.engine.stop();
       response(true)
     } else {
       response(false)
