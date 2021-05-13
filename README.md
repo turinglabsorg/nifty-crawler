@@ -17,8 +17,7 @@ To date, a first analysis of the best-known smart contracts has identified that 
 Centralized storage, such as on AWS or other storage service providers, while more efficient solutions do not give the market the confidence that it should be: what happens if a server is not paid for? Or if it gets hacked? All NFTs present would be compromised, thus leading to considerable damage to the owners, as well as to the entire world of crypto art.
 
 
-
-How Nifty Crawler works?
+## How Nifty Crawler works?
 
 Selecting a Smart Contract you get the list of all the NFTs present.
 
@@ -30,7 +29,8 @@ For each NFT the following are displayed:
 - The state of decentralization of the NFT
 - The state of decentralization of the Media
 
-Nifty Crawler next steps
+## Nifty Crawler next steps
+
 Here is a list of some of the features we are planning to introduce, step by step:
 
     • Automatic scan of all ERC721 / ERC1155 smart contracts and of their NFTs
