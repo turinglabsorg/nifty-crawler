@@ -34,23 +34,23 @@ const Track = mongoose.model('track', {
   last_update: Number
 });
 
+
+const provider = new HDWalletProvider(
+  "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol",
+  "https://eth-mainnet.alchemyapi.io/v2/" + NODE_API_KEY
+);
+const web3Instance = new web3(provider);
+
 function run(smartcontract_address) {
   return new Promise(async response => {
     isParsing = true
     if (smartcontract_address !== undefined) {
       console.log('Starting parse of ' + smartcontract_address)
-
-      const provider = new HDWalletProvider(
-        "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol",
-        "https://eth-mainnet.alchemyapi.io/v2/" + NODE_API_KEY
-      );
-      const web3Instance = new web3(provider);
       const nftContract = new web3Instance.eth.Contract(
         STANDARD_ABI,
         smartcontract_address,
         { gasLimit: "10000000" }
       );
-
       console.log('Taking contract details...')
       let name = ""
       let symbol = ""
@@ -123,7 +123,7 @@ function run(smartcontract_address) {
           toBlock = fromBlock
         }
       }
-      provider.engine.stop();
+      // provider.engine.stop();
       response(true)
     } else {
       response(false)
