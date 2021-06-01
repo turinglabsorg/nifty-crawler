@@ -201,15 +201,15 @@ function analyze(from, to, nftContract, smartcontract_address) {
                       responseType: 'arraybuffer'
                     })
                     if (image.data !== undefined) {
-                      console.log('Image downloaded correctly!')
+                      console.log('Media file downloaded correctly!')
                       ft = await FileType.fromBuffer(image.data)
                       console.log('File type is: ', ft)
                       // Check if exists image file
                       if (download_media) {
                         if (ft !== undefined) {
-                          if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'])) {
+                          /*if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'])) {
                             fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'], image.data)
-                          }
+                          }*/
                         }
                       }
                     }
