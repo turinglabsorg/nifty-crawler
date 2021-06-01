@@ -162,13 +162,16 @@ function analyze(from, to, nftContract, smartcontract_address) {
               let last = exploded.length - 1
               tokenFolder = exploded[last]
               // Check if exists token folder
-              if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
+              /*if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
                 fs.mkdirSync('./files/' + smartcontract_address + '/' + tokenFolder);
-              }
+              }*/
             } catch (e) {
               console.log('Can\'t get tokenURI')
               clearTimeout(timeout)
             }
+            uri = uri.replace('ipfs://ipfs', 'ipfs://')
+            uri = uri.replace('ipfs://', 'https://ipfs.io/ipfs/')
+            
             if (uri !== "") {
               clearTimeout(timeout)
               let metadata
