@@ -401,7 +401,7 @@ app.get('/nfts/:page', async (req, res) => {
     })
 })
 
-// app.use(express.static('files'))
+app.use(express.static('files'))
 
 app.listen(port, () => {
   console.log(`Erc721 Parser listening at http://localhost:${port}`)
