@@ -84,14 +84,14 @@ function run(smartcontract_address) {
       }
 
       // Check if exists files folder
-      if (!fs.existsSync('./files')) {
+      /*if (!fs.existsSync('./files')) {
         fs.mkdirSync('./files');
       }
 
       // Check if exists contract folder
       if (!fs.existsSync('./files/' + smartcontract_address)) {
         fs.mkdirSync('./files/' + smartcontract_address);
-      }
+      }*/
       let latest = null
       timeout = setTimeout(function () {
         console.log('RPC timed out while asking for latest block')
@@ -188,9 +188,9 @@ function analyze(from, to, nftContract, smartcontract_address) {
                 console.log('Metadata downloaded correctly!')
 
                 // Check if exists metadata json
-                if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
+                /*if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
                   fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/nft.json', metadata.data)
-                }
+                }*/
                 let md = JSON.parse(Buffer.from(metadata.data).toString())
                 let ft = ""
                 if (md.image !== undefined) {
@@ -401,7 +401,7 @@ app.get('/nfts/:page', async (req, res) => {
     })
 })
 
-app.use(express.static('files'))
+// app.use(express.static('files'))
 
 app.listen(port, () => {
   console.log(`Erc721 Parser listening at http://localhost:${port}`)
