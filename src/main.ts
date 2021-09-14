@@ -4,7 +4,7 @@ const HDWalletProvider = require("truffle-hdwallet-provider");
 const web3 = require("web3");
 const STANDARD_ABI = require('../abi.json')
 const ethers = require('ethers');
-const NODE_API_KEY = process.env.ALCHEMY_KEY;
+const ETH_PROVIDER = process.env.ETH_PROVIDER;
 const axios = require('axios')
 const fs = require('fs')
 const FileType = require('file-type');
@@ -37,7 +37,7 @@ const Track = mongoose.model('track', {
 
 const provider = new HDWalletProvider(
   "announce room limb pattern dry unit scale effort smooth jazz weasel alcohol",
-  "https://eth-mainnet.alchemyapi.io/v2/" + NODE_API_KEY
+  ETH_PROVIDER
 );
 const web3Instance = new web3(provider);
 
@@ -84,14 +84,14 @@ function run(smartcontract_address) {
       }
 
       // Check if exists files folder
-      /*if (!fs.existsSync('./files')) {
+      if (!fs.existsSync('./files')) {
         fs.mkdirSync('./files');
       }
-
       // Check if exists contract folder
       if (!fs.existsSync('./files/' + smartcontract_address)) {
         fs.mkdirSync('./files/' + smartcontract_address);
-      }*/
+      }
+
       let latest = null
       timeout = setTimeout(function () {
         console.log('RPC timed out while asking for latest block')
@@ -162,9 +162,9 @@ function analyze(from, to, nftContract, smartcontract_address) {
               let last = exploded.length - 1
               tokenFolder = exploded[last]
               // Check if exists token folder
-              /*if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
+              if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder)) {
                 fs.mkdirSync('./files/' + smartcontract_address + '/' + tokenFolder);
-              }*/
+              }
             } catch (e) {
               console.log('Can\'t get tokenURI')
               clearTimeout(timeout)
@@ -188,9 +188,9 @@ function analyze(from, to, nftContract, smartcontract_address) {
                 console.log('Metadata downloaded correctly!')
 
                 // Check if exists metadata json
-                /*if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
+                if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder) + '/nft.json') {
                   fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/nft.json', metadata.data)
-                }*/
+                }
                 let md = JSON.parse(Buffer.from(metadata.data).toString())
                 let ft = ""
                 if (md.image !== undefined) {
@@ -210,9 +210,9 @@ function analyze(from, to, nftContract, smartcontract_address) {
                       // Check if exists image file
                       if (download_media) {
                         if (ft !== undefined) {
-                          /*if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'])) {
+                          if (!fs.existsSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'])) {
                             fs.writeFileSync('./files/' + smartcontract_address + '/' + tokenFolder + '/' + tokenFolder + '.' + ft['ext'], image.data)
-                          }*/
+                          }
                         }
                       }
                     }

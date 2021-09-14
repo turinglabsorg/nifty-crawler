@@ -4,6 +4,7 @@ logs
 npm-debug.log*
 files/0x*
 !files/.DOWNLOAD_FILES_WILL_APPEAR_HERE
+ca-certificate.crt
 
 # Dependencies
 node_modules/
